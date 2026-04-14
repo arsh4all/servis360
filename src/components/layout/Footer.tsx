@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { MapPin, Mail, Phone, Facebook, Instagram, Twitter } from 'lucide-react';
 
 const SERVICES = [
@@ -34,11 +35,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-[#FACC15] rounded-xl flex items-center justify-center">
-                <span className="text-[#0F172A] font-black text-sm">S3</span>
-              </div>
-              <span className="font-black text-xl">Servis360.mu</span>
+            <div className="mb-4">
+              <Image src="/logo.png" alt="Servis360.mu" width={160} height={57} className="h-12 w-auto object-contain brightness-0 invert" />
             </div>
             <p className="text-[#94A3B8] text-sm leading-relaxed max-w-xs">
               Mauritius's trusted platform connecting homeowners with verified service professionals.

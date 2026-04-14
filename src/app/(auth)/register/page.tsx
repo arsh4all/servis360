@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -82,11 +83,8 @@ function RegisterPageInner() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 bg-[#0F172A] rounded-xl flex items-center justify-center">
-              <span className="text-[#FACC15] font-black text-sm">S3</span>
-            </div>
-            <span className="font-black text-[#0F172A] text-xl">Servis360.mu</span>
+          <Link href="/" className="inline-flex items-center mb-6">
+            <Image src="/logo.png" alt="Servis360.mu" width={180} height={64} className="h-14 w-auto object-contain" />
           </Link>
           <h1 className="text-2xl font-black text-[#0F172A]">Create your account</h1>
           <p className="text-[#64748B] text-sm mt-1">Join Mauritius's trusted home service platform</p>

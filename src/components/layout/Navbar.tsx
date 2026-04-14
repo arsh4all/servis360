@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -87,14 +88,8 @@ export function Navbar({ user }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-9 h-9 bg-[#0F172A] rounded-xl flex items-center justify-center">
-              <span className="text-[#FACC15] font-black text-xs">S3</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="font-black text-[#0F172A] text-lg leading-none">Servis360</span>
-              <span className="font-black text-[#FACC15] text-lg leading-none">.mu</span>
-            </div>
+          <Link href="/" className="flex items-center shrink-0">
+            <Image src="/logo.png" alt="Servis360.mu" width={140} height={50} className="h-10 w-auto object-contain" priority />
           </Link>
 
           {/* Desktop Nav */}

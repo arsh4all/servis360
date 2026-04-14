@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { LayoutDashboard, Calendar, Star, Settings, LogOut, Bell } from 'lucide-react';
 import { verifyAccessToken } from '@/lib/jwt';
 
@@ -35,10 +36,7 @@ export default async function WorkerLayout({ children }: { children: React.React
         {/* Logo */}
         <div className="px-6 py-5 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center">
-              <span className="text-[#0F172A] font-black text-xs">S3</span>
-            </div>
-            <span className="text-white font-bold text-sm">Servis360.mu</span>
+            <Image src="/logo.png" alt="Servis360.mu" width={120} height={43} className="h-8 w-auto object-contain brightness-0 invert" />
           </Link>
         </div>
 

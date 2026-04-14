@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   LayoutDashboard, Users, Briefcase, Calendar,
   TrendingUp, Settings, LogOut, Shield,
@@ -39,13 +40,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         {/* Logo */}
         <div className="px-6 py-5 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#FACC15] rounded-lg flex items-center justify-center">
-              <Shield className="w-4 h-4 text-[#0F172A]" />
-            </div>
-            <div>
-              <p className="text-white font-black text-sm leading-none">Servis360.mu</p>
-              <p className="text-[#64748B] text-xs">Admin Panel</p>
-            </div>
+            <Image src="/logo.png" alt="Servis360.mu" width={120} height={43} className="h-8 w-auto object-contain brightness-0 invert" />
+            <span className="text-[#64748B] text-xs">Admin</span>
           </Link>
         </div>
 
