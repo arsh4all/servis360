@@ -9,7 +9,7 @@ const SERVICES = [
     slug: 'cleaning',
     workers: 42,
     bg: 'bg-blue-50',
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=480&q=80',
+    image: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=480&q=80',
   },
   {
     name: 'Electrician',
@@ -23,14 +23,14 @@ const SERVICES = [
     slug: 'plumbing',
     workers: 31,
     bg: 'bg-cyan-50',
-    image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=480&q=80',
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=480&q=80',
   },
   {
     name: 'CCTV Installation',
     slug: 'cctv-installation',
     workers: 19,
     bg: 'bg-slate-50',
-    image: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=480&q=80',
+    image: 'https://images.unsplash.com/photo-1491553895911-0055eca6402d?auto=format&fit=crop&w=480&q=80',
   },
   {
     name: 'Nanny',
@@ -44,7 +44,7 @@ const SERVICES = [
     slug: 'elderly-care',
     workers: 17,
     bg: 'bg-rose-50',
-    image: 'https://images.unsplash.com/photo-1576765607924-3f7b8410a787?auto=format&fit=crop&w=480&q=80',
+    image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=480&q=80',
   },
 ];
 

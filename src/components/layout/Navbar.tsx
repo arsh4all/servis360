@@ -86,10 +86,10 @@ export function Navbar({ user }: NavbarProps) {
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
-            <Image src="/logo.png" alt="Servis360.mu" width={140} height={50} className="h-10 w-auto object-contain" priority />
+            <Image src="/logo.png" alt="Servis360.mu" width={200} height={72} className="h-14 w-auto object-contain" priority />
           </Link>
 
           {/* Desktop Nav */}
