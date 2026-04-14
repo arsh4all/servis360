@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, SlidersHorizontal, MapPin, Star, CheckCircle, X } from 'lucide-react';
 import Link from 'next/link';
@@ -23,6 +23,14 @@ const CATEGORIES = [
 ];
 
 export default function ServicesPage() {
+  return (
+    <Suspense>
+      <ServicesPageInner />
+    </Suspense>
+  );
+}
+
+function ServicesPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
