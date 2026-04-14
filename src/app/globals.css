@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-[#F8FAFC] text-[#0F172A] font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-header {
+    @apply text-center max-w-2xl mx-auto mb-12;
+  }
+
+  .card-base {
+    @apply bg-white rounded-2xl border border-[#E2E8F0] shadow-card;
+  }
+
+  .input-base {
+    @apply h-11 w-full rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-sm
+           placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#FACC15]
+           focus:border-[#FACC15] transition-colors;
+  }
+
+  .page-title {
+    @apply text-3xl sm:text-4xl font-black text-[#0F172A];
+  }
+
+  .section-tag {
+    @apply text-[#FACC15] font-semibold text-sm uppercase tracking-wider mb-2;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
