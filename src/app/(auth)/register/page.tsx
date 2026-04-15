@@ -11,18 +11,24 @@ import toast from 'react-hot-toast';
 import {
   Mail, Lock, Eye, EyeOff, User, ArrowRight,
   Users, Briefcase, Camera, Loader2, CheckCircle, X,
+  Sparkles, Zap, Droplets, Baby, Heart, Wrench,
+  Scissors, Leaf, ShieldCheck, Hammer, Wind, type LucideProps,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
 
-// Map Lucide icon names → display emoji
-const ICON_EMOJI: Record<string, string> = {
-  Sparkles: '✨', Zap: '⚡', Droplets: '💧',
-  Camera: '📷', Baby: '👶', Heart: '❤️',
-  Wrench: '🔧', Scissors: '✂️', Leaf: '🌿',
+// Map Lucide icon names → actual icon components
+const ICON_MAP: Record<string, React.FC<LucideProps>> = {
+  Sparkles, Zap, Droplets, Camera, Baby, Heart,
+  Wrench, Scissors, Leaf, ShieldCheck, Hammer, Wind,
 };
-const icon = (name: string) => ICON_EMOJI[name] || '⚙️';
+
+function ServiceIcon({ name, className }: { name: string; className?: string }) {
+  const Icon = ICON_MAP[name];
+  if (!Icon) return <Wrench className={className} />;
+  return <Icon className={className} />;
+}
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -255,7 +261,12 @@ function RegisterPageInner() {
                               : 'border-[#E2E8F0] hover:border-[#FACC15]/50 text-[#475569]'
                           )}
                         >
-                          <span className="text-base">{icon(svc.icon)}</span>
+                          <div className={cn(
+                            'w-7 h-7 rounded-lg flex items-center justify-center shrink-0',
+                            isSelected ? 'bg-[#FACC15]' : 'bg-[#F1F5F9]'
+                          )}>
+                            <ServiceIcon name={svc.icon} className={cn('w-3.5 h-3.5', isSelected ? 'text-[#0F172A]' : 'text-[#64748B]')} />
+                          </div>
                           <span className="text-xs font-semibold leading-tight">{svc.name}</span>
                           {isSelected && <CheckCircle className="w-3.5 h-3.5 text-[#FACC15] ml-auto shrink-0" />}
                         </button>
@@ -273,7 +284,9 @@ function RegisterPageInner() {
                       if (!svc) return null;
                       return (
                         <div key={sel.serviceId} className="flex items-center gap-2 bg-white rounded-xl border border-[#E2E8F0] p-2.5">
-                          <span className="text-sm">{icon(svc.icon)}</span>
+                          <div className="w-6 h-6 rounded-md bg-[#F1F5F9] flex items-center justify-center shrink-0">
+                            <ServiceIcon name={svc.icon} className="w-3.5 h-3.5 text-[#475569]" />
+                          </div>
                           <span className="text-xs font-semibold text-[#0F172A] flex-1 min-w-0 truncate">{svc.name}</span>
                           <div className="flex items-center gap-1 shrink-0">
                             <span className="text-xs text-[#94A3B8]">Rs</span>
