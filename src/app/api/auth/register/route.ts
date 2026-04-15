@@ -15,6 +15,7 @@ const registerSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
   role: z.enum(['CUSTOMER', 'WORKER']),
+  avatarUrl: z.string().url().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
       return apiError('Validation failed', 422, parsed.error.flatten().fieldErrors);
     }
 
-    const { name, email, password, role } = parsed.data;
+    const { name, email, password, role, avatarUrl } = parsed.data;
 
     // Check if email already exists
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
         email,
         passwordHash,
         role,
-        avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0F172A&color=FACC15&size=200`,
+        avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0F172A&color=FACC15&size=200`,
       },
     });
 

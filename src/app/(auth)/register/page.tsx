@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useRef, useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Users, Briefcase } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Users, Briefcase, Camera, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
@@ -43,6 +43,10 @@ function RegisterPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -52,17 +56,61 @@ function RegisterPageInner() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { role: 'CUSTOMER' },
+    defaultValues: {
+      role: (searchParams.get('role') as 'CUSTOMER' | 'WORKER') || 'CUSTOMER',
+    },
   });
 
   const selectedRole = watch('role');
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return; }
+
+    setAvatarPreview(URL.createObjectURL(file));
+
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      toast.error('Photo upload not configured — you can add it later in settings.');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+      formData.append('folder', 'servis360/workers');
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: 'POST', body: formData }
+      );
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setAvatarUrl(data.secure_url);
+      setAvatarPreview(data.secure_url);
+      toast.success('Photo uploaded!');
+    } catch {
+      toast.error('Upload failed — you can add a photo later in settings.');
+      setAvatarPreview(null);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
 
   async function onSubmit(data: RegisterForm) {
     const { confirmPassword, ...payload } = data;
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, ...(avatarUrl ? { avatarUrl } : {}) }),
     });
 
     const result = await res.json();
@@ -77,6 +125,9 @@ function RegisterPageInner() {
       toast.error(result.message || 'Registration failed');
     }
   }
+
+  const nameVal = watch('name');
+  const initials = nameVal?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
@@ -113,6 +164,57 @@ function RegisterPageInner() {
               />
             </div>
           </div>
+
+          {/* Photo Upload — only for workers */}
+          {selectedRole === 'WORKER' && (
+            <div className="mb-6 p-4 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0]">
+              <p className="text-xs font-bold text-[#475569] uppercase tracking-wider mb-3">Profile Photo</p>
+              <div className="flex items-center gap-4">
+                {/* Avatar Preview */}
+                <div
+                  className="relative group w-16 h-16 rounded-xl overflow-hidden border-2 border-[#E2E8F0] shrink-0 cursor-pointer bg-[#F1F5F9]"
+                  onClick={() => !uploading && fileRef.current?.click()}
+                >
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-[#FACC15] text-[#0F172A] font-black text-lg">
+                      {initials}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl">
+                    {uploading
+                      ? <Loader2 className="w-5 h-5 text-white animate-spin" />
+                      : <Camera className="w-5 h-5 text-white" />
+                    }
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  {avatarUrl ? (
+                    <div className="flex items-center gap-2 text-emerald-600 mb-1">
+                      <CheckCircle className="w-4 h-4 shrink-0" />
+                      <span className="text-xs font-semibold">Photo uploaded!</span>
+                    </div>
+                  ) : (
+                    <p className="text-xs font-semibold text-[#0F172A] mb-1">Add a profile photo</p>
+                  )}
+                  <p className="text-xs text-[#64748B] mb-2 leading-relaxed">
+                    Workers with photos get <strong>3x more bookings</strong>. Optional — you can add it later.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                    className="text-xs font-semibold text-[#FACC15] hover:text-[#F59E0B] underline disabled:opacity-50 transition-colors"
+                  >
+                    {uploading ? 'Uploading...' : avatarUrl ? 'Change photo' : 'Upload photo'}
+                  </button>
+                </div>
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input
