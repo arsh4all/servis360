@@ -16,6 +16,11 @@ const registerSchema = z.object({
     .regex(/[0-9]/, 'Password must contain at least one number'),
   role: z.enum(['CUSTOMER', 'WORKER']),
   avatarUrl: z.string().url().optional(),
+  services: z.array(z.object({
+    serviceId: z.string(),
+    price: z.number().positive(),
+    pricingType: z.enum(['FIXED', 'HOURLY']),
+  })).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -27,7 +32,7 @@ export async function POST(req: NextRequest) {
       return apiError('Validation failed', 422, parsed.error.flatten().fieldErrors);
     }
 
-    const { name, email, password, role, avatarUrl } = parsed.data;
+    const { name, email, password, role, avatarUrl, services } = parsed.data;
 
     // Check if email already exists
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -49,14 +54,27 @@ export async function POST(req: NextRequest) {
 
     // Auto-create worker profile if registering as worker
     if (role === 'WORKER') {
-      await prisma.workerProfile.create({
+      const profile = await prisma.workerProfile.create({
         data: {
           userId: user.id,
           location: 'Mauritius',
-          isApproved: false, // Requires admin approval
+          isApproved: false,
           isVerified: false,
         },
       });
+
+      // Create worker services if provided
+      if (services && services.length > 0) {
+        await prisma.workerService.createMany({
+          data: services.map((s) => ({
+            workerId: profile.id,
+            serviceId: s.serviceId,
+            price: s.price,
+            pricingType: s.pricingType,
+          })),
+          skipDuplicates: true,
+        });
+      }
     }
 
     // Generate tokens
