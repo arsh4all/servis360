@@ -8,8 +8,10 @@ export function cn(...inputs: ClassValue[]) {
 
 // ─── API Response Helpers ────────────────────────────────────────────────────
 
-export function apiSuccess<T>(data: T, status = 200) {
-  return NextResponse.json({ success: true, data }, { status });
+export function apiSuccess<T>(data: T, messageOrStatus?: string | number) {
+  const status = typeof messageOrStatus === 'number' ? messageOrStatus : 200;
+  const extra = typeof messageOrStatus === 'string' ? { message: messageOrStatus } : {};
+  return NextResponse.json({ success: true, data, ...extra }, { status });
 }
 
 export function apiError(message: string, status = 400, errors?: unknown) {

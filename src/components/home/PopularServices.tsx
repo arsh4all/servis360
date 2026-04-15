@@ -48,7 +48,13 @@ const SERVICES = [
   },
 ];
 
-export function PopularServices() {
+export function PopularServices({
+  title = 'Popular Services',
+  subtitle = 'Book from our wide range of professional home services — all vetted and insured.',
+}: {
+  title?: string;
+  subtitle?: string;
+} = {}) {
   return (
     <section className="py-20 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -60,10 +66,10 @@ export function PopularServices() {
               What We Offer
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-[#0F172A]">
-              Popular Services
+              {title}
             </h2>
             <p className="text-[#64748B] mt-2 max-w-md">
-              Book from our wide range of professional home services — all vetted and insured.
+              {subtitle}
             </p>
           </div>
           <Link

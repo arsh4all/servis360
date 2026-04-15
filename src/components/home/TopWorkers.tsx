@@ -89,7 +89,13 @@ const WORKERS = [
   },
 ];
 
-export function TopWorkers() {
+export function TopWorkers({
+  title = 'Top Rated Workers',
+  subtitle = 'Hand-picked professionals with the highest ratings and reviews from our community.',
+}: {
+  title?: string;
+  subtitle?: string;
+} = {}) {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,10 +106,10 @@ export function TopWorkers() {
               Top Professionals
             </p>
             <h2 className="text-3xl sm:text-4xl font-black text-[#0F172A]">
-              Top Rated Workers
+              {title}
             </h2>
             <p className="text-[#64748B] mt-2 max-w-md">
-              Hand-picked professionals with the highest ratings and reviews from our community.
+              {subtitle}
             </p>
           </div>
           <Link

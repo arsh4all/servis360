@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import { requireRole } from '@/lib/auth';
 import { apiSuccess, apiError } from '@/lib/utils';
+import bcrypt from 'bcryptjs';
 
 export async function GET(req: NextRequest) {
   try {
@@ -55,5 +56,58 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     if (error.statusCode) return apiError(error.message, error.statusCode);
     return apiError('Failed to fetch workers', 500);
+  }
+}
+
+// POST — create a new worker account
+export async function POST(req: NextRequest) {
+  try {
+    await requireRole(req, ['ADMIN']);
+    const { name, email, password = 'Worker@123', phone, avatarUrl, bio, location, experienceYears, services } = await req.json();
+
+    if (!name || !email) return apiError('Name and email are required', 400);
+
+    const exists = await prisma.user.findUnique({ where: { email } });
+    if (exists) return apiError('Email already in use', 409);
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        phone,
+        avatarUrl,
+        role: 'WORKER',
+        workerProfile: {
+          create: {
+            bio: bio || '',
+            location: location || 'Mauritius',
+            experienceYears: Number(experienceYears) || 0,
+            isApproved: true,
+            isVerified: true,
+          },
+        },
+      },
+      include: { workerProfile: true },
+    });
+
+    // Add services if provided
+    if (services?.length && user.workerProfile) {
+      await prisma.workerService.createMany({
+        data: services.map((s: any) => ({
+          workerId: user.workerProfile!.id,
+          serviceId: s.serviceId,
+          price: s.price,
+          pricingType: s.pricingType || 'FIXED',
+        })),
+      });
+    }
+
+    return apiSuccess({ id: user.id, profileId: user.workerProfile?.id }, 'Worker created successfully');
+  } catch (error: any) {
+    if (error.statusCode) return apiError(error.message, error.statusCode);
+    return apiError('Failed to create worker', 500);
   }
 }

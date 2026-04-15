@@ -8,7 +8,15 @@ import { useTilt } from '@/hooks/useTilt';
 
 const POPULAR_SEARCHES = ['Cleaning', 'Electrician', 'Plumbing', 'Nanny', 'CCTV'];
 
-export function HeroSection() {
+export function HeroSection({
+  badge = 'Trusted by 5,000+ homeowners in Mauritius',
+  title = 'Find trusted help for your home & family',
+  subtitle = 'Book verified cleaning, electrical, plumbing, childcare, and elderly care services. Rated workers, secure payments — peace of mind guaranteed.',
+}: {
+  badge?: string;
+  title?: string;
+  subtitle?: string;
+} = {}) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -44,32 +52,15 @@ export function HeroSection() {
             {/* Trust badge */}
             <div className="inline-flex items-center gap-2 bg-[#FACC15]/10 border border-[#FACC15]/30 rounded-full px-4 py-1.5 mb-6">
               <Shield className="w-4 h-4 text-[#FACC15]" />
-              <span className="text-[#FACC15] text-sm font-medium">Trusted by 5,000+ homeowners in Mauritius</span>
+              <span className="text-[#FACC15] text-sm font-medium">{badge}</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6">
-              Find trusted help for your{' '}
-              <span className="text-[#FACC15] relative">
-                home & family
-                <svg
-                  className="absolute -bottom-2 left-0 w-full"
-                  viewBox="0 0 300 12"
-                  fill="none"
-                >
-                  <path
-                    d="M2 10C50 4 150 4 298 10"
-                    stroke="#FACC15"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    opacity="0.6"
-                  />
-                </svg>
-              </span>
+              {title}
             </h1>
 
             <p className="text-[#94A3B8] text-lg leading-relaxed mb-8 max-w-lg">
-              Book verified cleaning, electrical, plumbing, childcare, and elderly care services.
-              Rated workers, secure payments — peace of mind guaranteed.
+              {subtitle}
             </p>
 
             {/* Search Bar */}

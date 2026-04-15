@@ -45,7 +45,7 @@ const FEATURES = [
   },
 ];
 
-export function WhyChooseUs() {
+export function WhyChooseUs({ title = 'The Smarter Way to Book Home Services' }: { title?: string } = {}) {
   return (
     <section className="py-20 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -55,7 +55,7 @@ export function WhyChooseUs() {
             Why Servis360.mu
           </p>
           <h2 className="text-3xl sm:text-4xl font-black text-[#0F172A] mb-4">
-            The Smarter Way to Book Home Services
+            {title}
           </h2>
           <p className="text-[#64748B] text-lg">
             We take the stress out of finding reliable home service professionals in Mauritius.

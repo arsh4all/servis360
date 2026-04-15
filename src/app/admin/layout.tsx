@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   LayoutDashboard, Users, Briefcase, Calendar,
-  TrendingUp, Settings, LogOut, Shield,
+  TrendingUp, LogOut, Shield, Wrench, FileText,
 } from 'lucide-react';
 import { verifyAccessToken } from '@/lib/jwt';
 
@@ -23,10 +23,11 @@ async function getAdminUser() {
 
 const NAV = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/workers', label: 'Workers', icon: Briefcase },
+  { href: '/admin/services', label: 'Services', icon: Wrench },
   { href: '/admin/bookings', label: 'Bookings', icon: Calendar },
-  { href: '/admin/revenue', label: 'Revenue', icon: TrendingUp },
+  { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/content', label: 'Site Content', icon: FileText },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
