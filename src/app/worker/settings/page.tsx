@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Save, Loader2, CheckCircle, MapPin, Clock, Briefcase, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Camera, Save, Loader2, CheckCircle, MapPin, Clock, Briefcase, ToggleLeft, ToggleRight, Phone } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type Profile = {
@@ -10,7 +10,7 @@ type Profile = {
   experienceYears: number;
   isAvailable: boolean;
   responseTime: string;
-  user: { name: string; email: string; avatarUrl: string | null };
+  user: { name: string; email: string; avatarUrl: string | null; phone: string | null };
 };
 
 const inp = "w-full border border-[#E2E8F0] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#FACC15] focus:border-transparent bg-white";
@@ -25,6 +25,7 @@ export default function WorkerSettingsPage() {
 
   const [form, setForm] = useState({
     name: '',
+    phone: '',
     bio: '',
     location: '',
     experienceYears: 0,
@@ -42,6 +43,7 @@ export default function WorkerSettingsPage() {
           setAvatarPreview(p.user.avatarUrl || null);
           setForm({
             name: p.user.name || '',
+            phone: p.user.phone || '',
             bio: p.bio || '',
             location: p.location || '',
             experienceYears: p.experienceYears || 0,
@@ -123,6 +125,7 @@ export default function WorkerSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name,
+          phone: form.phone,
           bio: form.bio,
           location: form.location,
           experienceYears: Number(form.experienceYears),
@@ -243,6 +246,20 @@ export default function WorkerSettingsPage() {
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="Your full name"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#475569] mb-1">
+                <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> WhatsApp / Phone Number</span>
+              </label>
+              <input
+                className={inp}
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                placeholder="e.g. 52 123 456"
+              />
+              <p className="text-xs text-[#94A3B8] mt-1">Used for WhatsApp contact on your public profile. Customers will see a direct chat button.</p>
             </div>
 
             <div>
