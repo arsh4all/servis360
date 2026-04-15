@@ -5,6 +5,8 @@ import { requireRole } from '@/lib/auth';
 import { apiSuccess, apiError } from '@/lib/utils';
 
 const updateProfileSchema = z.object({
+  name: z.string().min(2).max(100).optional(),
+  avatarUrl: z.string().url().optional().or(z.literal('')),
   bio: z.string().max(1000).optional(),
   experienceYears: z.number().int().min(0).max(50).optional(),
   location: z.string().min(2).max(100).optional(),
@@ -43,9 +45,25 @@ export async function PATCH(req: NextRequest) {
       return apiError('Validation failed', 422, parsed.error.flatten().fieldErrors);
     }
 
+    const { name, avatarUrl, ...profileData } = parsed.data;
+
+    // Update user fields (name, avatarUrl) if provided
+    if (name !== undefined || avatarUrl !== undefined) {
+      await prisma.user.update({
+        where: { id: authUser.userId },
+        data: {
+          ...(name !== undefined && { name }),
+          ...(avatarUrl !== undefined && avatarUrl !== '' && { avatarUrl }),
+        },
+      });
+    }
+
     const profile = await prisma.workerProfile.update({
       where: { userId: authUser.userId },
-      data: parsed.data,
+      data: profileData,
+      include: {
+        user: { select: { name: true, email: true, avatarUrl: true } },
+      },
     });
 
     return apiSuccess(profile);
