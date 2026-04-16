@@ -11,11 +11,14 @@ export async function GET(
       where: { id: params.id },
       include: {
         user: {
-          select: { id: true, name: true, avatarUrl: true, role: true, createdAt: true },
+          select: { id: true, name: true, avatarUrl: true, role: true, createdAt: true, phone: true },
         },
         workerServices: {
           where: { isActive: true },
           include: { service: true },
+        },
+        photos: {
+          orderBy: { sortOrder: 'asc' },
         },
       },
     });
@@ -53,6 +56,8 @@ export async function GET(
       userId: profile.userId,
       name: profile.user.name,
       avatarUrl: profile.user.avatarUrl,
+      coverImageUrl: profile.coverImageUrl,
+      tagline: profile.tagline,
       bio: profile.bio,
       location: profile.location,
       experienceYears: profile.experienceYears,
@@ -63,7 +68,9 @@ export async function GET(
       isFeatured: profile.isFeatured,
       isAvailable: profile.isAvailable,
       responseTime: profile.responseTime,
+      phone: profile.user.phone,
       memberSince: profile.user.createdAt,
+      photos: profile.photos,
       services: profile.workerServices.map((ws) => ({
         id: ws.id,
         price: Number(ws.price),

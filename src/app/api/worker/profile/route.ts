@@ -7,7 +7,9 @@ import { apiSuccess, apiError } from '@/lib/utils';
 const updateProfileSchema = z.object({
   name: z.string().min(2).max(100).optional(),
   avatarUrl: z.string().url().optional().or(z.literal('')),
+  coverImageUrl: z.string().url().optional().or(z.literal('')),
   phone: z.string().max(20).optional().or(z.literal('')),
+  tagline: z.string().max(150).optional().or(z.literal('')),
   bio: z.string().max(1000).optional(),
   experienceYears: z.number().int().min(0).max(50).optional(),
   location: z.string().min(2).max(100).optional(),
@@ -59,6 +61,10 @@ export async function PATCH(req: NextRequest) {
         },
       });
     }
+
+    // Clean up empty string optionals for profile fields
+    if (profileData.coverImageUrl === '') (profileData as any).coverImageUrl = null;
+    if (profileData.tagline === '') (profileData as any).tagline = null;
 
     const profile = await prisma.workerProfile.update({
       where: { userId: authUser.userId },

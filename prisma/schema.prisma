@@ -112,6 +112,8 @@ model WorkerProfile {
   isAvailable     Boolean  @default(true) @map("is_available")
   isFeatured      Boolean  @default(false) @map("is_featured")
   responseTime    String?  @map("response_time") // e.g. "Usually within 1 hour"
+  coverImageUrl   String?  @map("cover_image_url")
+  tagline         String?  @db.Text
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -119,6 +121,7 @@ model WorkerProfile {
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   workerServices  WorkerService[]
   availability    WorkerAvailability[]
+  photos          WorkerPhoto[]
 
   @@map("worker_profiles")
 }
@@ -134,6 +137,19 @@ model WorkerAvailability {
   worker WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
 
   @@map("worker_availability")
+}
+
+model WorkerPhoto {
+  id        String   @id @default(uuid())
+  workerId  String   @map("worker_id")
+  url       String
+  caption   String?
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  worker WorkerProfile @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@map("worker_photos")
 }
 
 // ─────────────────────────────────────────────

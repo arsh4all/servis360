@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Camera, Save, Loader2, CheckCircle, MapPin, Clock, Briefcase, ToggleLeft, ToggleRight, Phone } from 'lucide-react';
+import { Camera, Save, Loader2, CheckCircle, MapPin, Clock, Briefcase, ToggleLeft, ToggleRight, Phone, ImageIcon, Quote } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 type Profile = {
@@ -10,6 +10,8 @@ type Profile = {
   experienceYears: number;
   isAvailable: boolean;
   responseTime: string;
+  tagline: string | null;
+  coverImageUrl: string | null;
   user: { name: string; email: string; avatarUrl: string | null; phone: string | null };
 };
 
@@ -20,12 +22,16 @@ export default function WorkerSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const coverRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: '',
     phone: '',
+    tagline: '',
     bio: '',
     location: '',
     experienceYears: 0,
@@ -41,9 +47,11 @@ export default function WorkerSettingsPage() {
           const p: Profile = d.data;
           setProfile(p);
           setAvatarPreview(p.user.avatarUrl || null);
+          setCoverPreview(p.coverImageUrl || null);
           setForm({
             name: p.user.name || '',
             phone: p.user.phone || '',
+            tagline: p.tagline || '',
             bio: p.bio || '',
             location: p.location || '',
             experienceYears: p.experienceYears || 0,
@@ -117,6 +125,45 @@ export default function WorkerSettingsPage() {
     }
   };
 
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return; }
+
+    setCoverPreview(URL.createObjectURL(file));
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+    if (!cloudName || !uploadPreset) { toast.error('Upload not configured.'); return; }
+
+    setCoverUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+      formData.append('folder', 'servis360/covers');
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+      const saveRes = await fetch('/api/worker/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ coverImageUrl: data.secure_url }),
+      });
+      const saveData = await saveRes.json();
+      if (saveData.success) {
+        setCoverPreview(data.secure_url);
+        toast.success('Cover photo updated!');
+      } else throw new Error('Failed to save');
+    } catch {
+      toast.error('Failed to upload cover. Try again.');
+      setCoverPreview(profile?.coverImageUrl || null);
+    } finally {
+      setCoverUploading(false);
+      if (coverRef.current) coverRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -126,6 +173,7 @@ export default function WorkerSettingsPage() {
         body: JSON.stringify({
           name: form.name,
           phone: form.phone,
+          tagline: form.tagline,
           bio: form.bio,
           location: form.location,
           experienceYears: Number(form.experienceYears),
@@ -234,6 +282,31 @@ export default function WorkerSettingsPage() {
           </div>
         </div>
 
+        {/* Cover Photo Card */}
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden">
+          <div className="relative h-32 bg-gradient-to-r from-[#0F172A] to-[#1E293B] group cursor-pointer" onClick={() => coverRef.current?.click()}>
+            {coverPreview && <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />}
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              {coverUploading
+                ? <Loader2 className="w-6 h-6 text-white animate-spin" />
+                : <><ImageIcon className="w-6 h-6 text-white mb-1" /><span className="text-white text-xs font-semibold">Click to change cover photo</span></>
+              }
+            </div>
+            {!coverPreview && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-white/50 text-sm flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Add cover photo</span>
+              </div>
+            )}
+          </div>
+          <div className="px-6 py-3 flex items-center justify-between border-t border-[#E2E8F0]">
+            <p className="text-xs text-[#64748B]">Wide banner shown at the top of your public profile (1200×400px recommended)</p>
+            <button onClick={() => coverRef.current?.click()} disabled={coverUploading} className="text-xs font-semibold text-[#FACC15] hover:underline disabled:opacity-50">
+              {coverUploading ? 'Uploading...' : 'Change'}
+            </button>
+          </div>
+          <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
+        </div>
+
         {/* Personal Info Card */}
         <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6">
           <h2 className="text-sm font-bold text-[#0F172A] mb-5">Personal Information</h2>
@@ -260,6 +333,20 @@ export default function WorkerSettingsPage() {
                 placeholder="e.g. 52 123 456"
               />
               <p className="text-xs text-[#94A3B8] mt-1">Used for WhatsApp contact on your public profile. Customers will see a direct chat button.</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#475569] mb-1">
+                <span className="flex items-center gap-1"><Quote className="w-3.5 h-3.5" /> Tagline</span>
+              </label>
+              <input
+                className={inp}
+                value={form.tagline}
+                onChange={(e) => setForm((f) => ({ ...f, tagline: e.target.value }))}
+                placeholder='e.g. "Your vision, our commitment!"'
+                maxLength={150}
+              />
+              <p className="text-xs text-[#94A3B8] mt-1">Short motto shown on your profile hero. Max 150 characters.</p>
             </div>
 
             <div>
