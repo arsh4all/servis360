@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Calendar, CheckCircle, Clock, DollarSign,
-  Star, TrendingUp, ArrowRight, Check, X as XIcon,
+  Star, TrendingUp, ArrowRight, Check, X as XIcon, Eye, Settings,
 } from 'lucide-react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
@@ -18,15 +19,21 @@ export default function WorkerDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [isApproved, setIsApproved] = useState(false);
 
   useEffect(() => {
     Promise.all([
       fetch('/api/worker/stats').then((r) => r.json()),
-      fetch('/api/bookings?status=PENDING&pageSize=5').then((r) => r.json()),
       fetch('/api/bookings?pageSize=10').then((r) => r.json()),
-    ]).then(([statsData, pendingData, allData]) => {
+      fetch('/api/worker/profile').then((r) => r.json()),
+    ]).then(([statsData, allData, profileData]) => {
       if (statsData.success) setStats(statsData.data);
       if (allData.success) setBookings(allData.data.items);
+      if (profileData.success) {
+        setProfileId(profileData.data.id);
+        setIsApproved(profileData.data.isApproved);
+      }
     }).finally(() => setLoading(false));
   }, []);
 
@@ -75,8 +82,30 @@ export default function WorkerDashboard() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Page Header */}
       <div className="bg-white border-b border-[#E2E8F0] px-6 py-5">
-        <h1 className="text-xl font-black text-[#0F172A]">Worker Dashboard</h1>
-        <p className="text-sm text-[#64748B]">Manage your bookings and earnings</p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-black text-[#0F172A]">Worker Dashboard</h1>
+            <p className="text-sm text-[#64748B]">Manage your bookings and earnings</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/worker/settings">
+              <Button variant="outline" size="sm" leftIcon={<Settings className="w-4 h-4" />}>
+                Edit Profile
+              </Button>
+            </Link>
+            {profileId && isApproved ? (
+              <Link href={`/workers/${profileId}`} target="_blank">
+                <Button variant="accent" size="sm" leftIcon={<Eye className="w-4 h-4" />}>
+                  View My Profile
+                </Button>
+              </Link>
+            ) : (
+              <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl font-semibold">
+                Pending approval
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="p-6 space-y-6">
