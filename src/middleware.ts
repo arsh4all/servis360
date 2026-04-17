@@ -20,10 +20,13 @@ export async function middleware(request: NextRequest) {
   // Get token from cookie
   const token = request.cookies.get('access_token')?.value;
 
-  const isProtected = PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
-  const isAuthRoute = AUTH_ROUTES.some((route) => pathname.startsWith(route));
-  const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
-  const isWorkerRoute = WORKER_ROUTES.some((route) => pathname.startsWith(route));
+  const matchRoute = (routes: string[]) =>
+    routes.some((r) => pathname === r || pathname.startsWith(r + '/'));
+
+  const isProtected = matchRoute(PROTECTED_ROUTES);
+  const isAuthRoute = matchRoute(AUTH_ROUTES);
+  const isAdminRoute = matchRoute(ADMIN_ROUTES);
+  const isWorkerRoute = matchRoute(WORKER_ROUTES);
 
   // If not logged in and trying to access protected route
   if (isProtected && !token) {
