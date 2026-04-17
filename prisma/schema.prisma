@@ -72,6 +72,7 @@ model User {
   workerBookings  Booking[]      @relation("WorkerBookings")
   reviewsGiven    Review[]       @relation("ReviewsGiven")
   reviewsReceived Review[]       @relation("ReviewsReceived")
+  guestReviews    GuestReview[]
   subscription    Subscription?
   sentMessages    Message[]      @relation("SentMessages")
   receivedMessages Message[]     @relation("ReceivedMessages")
@@ -114,6 +115,7 @@ model WorkerProfile {
   responseTime    String?  @map("response_time") // e.g. "Usually within 1 hour"
   coverImageUrl   String?  @map("cover_image_url")
   tagline         String?  @db.Text
+  videoUrl        String?  @map("video_url")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -250,6 +252,23 @@ model Review {
   worker   User    @relation("ReviewsReceived", fields: [workerId], references: [id])
 
   @@map("reviews")
+}
+
+model GuestReview {
+  id            String   @id @default(uuid())
+  workerId      String   @map("worker_id")
+  reviewerName  String   @map("reviewer_name")
+  reviewerPhone String?  @map("reviewer_phone")
+  rating        Int      // 1-5
+  comment       String?  @db.Text
+  reply         String?  @db.Text
+  isVisible     Boolean  @default(true) @map("is_visible")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  worker User @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@map("guest_reviews")
 }
 
 // ─────────────────────────────────────────────

@@ -27,29 +27,60 @@ export async function GET(
       return apiError('Worker not found', 404);
     }
 
-    // Fetch recent reviews (no phone numbers, no private data)
-    const reviews = await prisma.review.findMany({
+    // Booking-based reviews (visible)
+    const bookingReviews = await prisma.review.findMany({
       where: { workerId: profile.userId, isVisible: true },
       orderBy: { createdAt: 'desc' },
-      take: 10,
+      take: 20,
       include: {
-        customer: {
-          select: { name: true, avatarUrl: true },
-        },
+        customer: { select: { name: true, avatarUrl: true } },
       },
     });
 
-    // Rating distribution
-    const ratingDist = await prisma.review.groupBy({
+    // Guest reviews (visible)
+    const guestReviews = await prisma.guestReview.findMany({
+      where: { workerId: profile.userId, isVisible: true },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+
+    // Combined reviews sorted by date
+    const allReviews = [
+      ...bookingReviews.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        reply: r.reply,
+        createdAt: r.createdAt,
+        isVerifiedPurchase: true,
+        customer: { name: r.customer.name, avatarUrl: r.customer.avatarUrl },
+      })),
+      ...guestReviews.map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        reply: r.reply,
+        createdAt: r.createdAt,
+        isVerifiedPurchase: false,
+        customer: { name: r.reviewerName, avatarUrl: null },
+      })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 20);
+
+    // Rating distribution across all visible reviews
+    const bookingDist = await prisma.review.groupBy({
+      by: ['rating'],
+      where: { workerId: profile.userId, isVisible: true },
+      _count: true,
+    });
+    const guestDist = await prisma.guestReview.groupBy({
       by: ['rating'],
       where: { workerId: profile.userId, isVisible: true },
       _count: true,
     });
 
     const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    ratingDist.forEach((r) => {
-      distribution[r.rating] = r._count;
-    });
+    bookingDist.forEach((r) => { distribution[r.rating] = (distribution[r.rating] || 0) + r._count; });
+    guestDist.forEach((r) => { distribution[r.rating] = (distribution[r.rating] || 0) + r._count; });
 
     return apiSuccess({
       id: profile.id,
@@ -57,6 +88,7 @@ export async function GET(
       name: profile.user.name,
       avatarUrl: profile.user.avatarUrl,
       coverImageUrl: profile.coverImageUrl,
+      videoUrl: profile.videoUrl,
       tagline: profile.tagline,
       bio: profile.bio,
       location: profile.location,
@@ -78,17 +110,7 @@ export async function GET(
         description: ws.description,
         service: ws.service,
       })),
-      reviews: reviews.map((r) => ({
-        id: r.id,
-        rating: r.rating,
-        comment: r.comment,
-        reply: r.reply,
-        createdAt: r.createdAt,
-        customer: {
-          name: r.customer.name,
-          avatarUrl: r.customer.avatarUrl,
-        },
-      })),
+      reviews: allReviews,
       ratingDistribution: distribution,
     });
   } catch (error) {
