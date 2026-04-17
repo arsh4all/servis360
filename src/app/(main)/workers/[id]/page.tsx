@@ -58,7 +58,7 @@ export default function WorkerProfilePage() {
     ? Math.min(...worker.services.map((s: any) => Number(s.price)))
     : null;
 
-  const uniqueServices = [...new Set(worker.services.map((s: any) => s.service.name))] as string[];
+  const uniqueServices = Array.from(new Set(worker.services.map((s: any) => s.service.name))) as string[];
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -400,7 +400,7 @@ export default function WorkerProfilePage() {
                       <p className="text-sm font-semibold text-[#0F172A] truncate">{r.customer.name}</p>
                       <span className="text-xs text-[#94A3B8] shrink-0">{formatDate(r.createdAt)}</span>
                     </div>
-                    <StarRating rating={r.rating} size="xs" className="mb-2" />
+                    <StarRating rating={r.rating} size="sm" className="mb-2" />
                     {r.comment && <p className="text-sm text-[#475569] leading-relaxed">{r.comment}</p>}
                     {r.reply && (
                       <div className="mt-3 pl-3 border-l-2 border-[#FACC15] bg-[#FFFBEB] rounded-r-xl py-2.5 pr-3">
