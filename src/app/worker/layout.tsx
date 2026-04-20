@@ -36,7 +36,9 @@ export default async function WorkerLayout({ children }: { children: React.React
         {/* Logo */}
         <div className="px-6 py-5 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Servis360.mu" width={120} height={43} className="h-8 w-auto object-contain brightness-0 invert" />
+            <div className="bg-white rounded-lg px-2 py-1">
+              <Image src="/logo.png" alt="Servis360.mu" width={140} height={50} className="h-10 w-auto object-contain" />
+            </div>
           </Link>
         </div>
 

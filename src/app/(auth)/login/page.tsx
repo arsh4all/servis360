@@ -61,7 +61,7 @@ function LoginPageInner() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center mb-6">
-            <Image src="/logo.png" alt="Servis360.mu" width={220} height={80} className="h-20 w-auto object-contain" />
+            <Image src="/logo.png" alt="Servis360.mu" width={300} height={108} className="h-28 w-auto object-contain" />
           </Link>
           <h1 className="text-2xl font-black text-[#0F172A]">Welcome back</h1>
           <p className="text-[#64748B] text-sm mt-1">Sign in to your account</p>

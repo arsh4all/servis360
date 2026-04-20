@@ -36,7 +36,9 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="mb-4">
-              <Image src="/logo.png" alt="Servis360.mu" width={200} height={72} className="h-16 w-auto object-contain brightness-0 invert" />
+              <div className="inline-block bg-white rounded-xl px-3 py-2">
+                <Image src="/logo.png" alt="Servis360.mu" width={220} height={80} className="h-16 w-auto object-contain" />
+              </div>
             </div>
             <p className="text-[#94A3B8] text-sm leading-relaxed max-w-xs">
               Mauritius's trusted platform connecting homeowners with verified service professionals.

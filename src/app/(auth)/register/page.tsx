@@ -255,7 +255,7 @@ function RegisterPageInner() {
         {/* Logo */}
         <div className="text-center mb-6">
           <Link href="/" className="inline-flex items-center mb-4">
-            <Image src="/logo.png" alt="Servis360.mu" width={200} height={72} className="h-16 w-auto object-contain" />
+            <Image src="/logo.png" alt="Servis360.mu" width={280} height={100} className="h-24 w-auto object-contain" />
           </Link>
           <h1 className="text-2xl font-black text-[#0F172A]">Create your account</h1>
           <p className="text-[#64748B] text-sm mt-1">Join Mauritius's trusted home service platform</p>
