@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, MapPin, ArrowRight, Star, Shield, CheckCircle } from 'lucide-react';
+import { Search, MapPin, ArrowRight, Star, Shield, CheckCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useTilt } from '@/hooks/useTilt';
+import { MAURITIUS_DISTRICTS } from '@/lib/districts';
 
 const POPULAR_SEARCHES = ['Cleaning', 'Electrician', 'Plumbing', 'Nanny', 'CCTV'];
 
@@ -19,6 +20,7 @@ export function HeroSection({
 } = {}) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [district, setDistrict] = useState('');
 
   // Independent tilt instance for each hero card
   const mainCard  = useTilt({ maxTilt: 6,  scale: 1.02, gloss: true,  perspective: 900 });
@@ -28,12 +30,11 @@ export function HeroSection({
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
+    const params = new URLSearchParams();
     const query = searchQuery.trim();
-    if (query) {
-      router.push(`/services?search=${encodeURIComponent(query)}`);
-    } else {
-      router.push('/services');
-    }
+    if (query) params.set('search', query);
+    if (district) params.set('district', district);
+    router.push(`/services${params.toString() ? `?${params}` : ''}`);
   }
 
   return (
@@ -76,9 +77,19 @@ export function HeroSection({
                     className="flex-1 text-[#0F172A] placeholder:text-[#94A3B8] outline-none text-sm bg-transparent"
                   />
                 </div>
-                <div className="hidden sm:flex items-center gap-1 px-3 border-l border-[#E2E8F0]">
-                  <MapPin className="w-4 h-4 text-[#64748B]" />
-                  <span className="text-sm text-[#64748B]">Mauritius</span>
+                <div className="hidden sm:flex items-center gap-1 pl-3 border-l border-[#E2E8F0] relative">
+                  <MapPin className="w-4 h-4 text-[#64748B] shrink-0" />
+                  <select
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
+                    className="text-sm text-[#64748B] bg-transparent outline-none cursor-pointer appearance-none pr-5"
+                  >
+                    <option value="">All Mauritius</option>
+                    {MAURITIUS_DISTRICTS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-3.5 h-3.5 text-[#94A3B8] absolute right-0 pointer-events-none" />
                 </div>
                 <Button type="submit" variant="accent" size="md" className="shrink-0">
                   Search
