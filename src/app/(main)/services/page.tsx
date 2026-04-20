@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, SlidersHorizontal, MapPin, Star, CheckCircle, X } from 'lucide-react';
+import { Search, MapPin, Star, CheckCircle, X } from 'lucide-react';
 import Link from 'next/link';
+import { MAURITIUS_DISTRICTS } from '@/lib/districts';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
@@ -40,10 +41,10 @@ function ServicesPageInner() {
 
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
+  const [district, setDistrict] = useState(searchParams.get('district') || '');
   const [minRating, setMinRating] = useState(0);
   const [maxPrice, setMaxPrice] = useState(99999);
   const [availableOnly, setAvailableOnly] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
 
   const fetchWorkers = useCallback(async () => {
     setLoading(true);
@@ -51,6 +52,7 @@ function ServicesPageInner() {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (category) params.set('service', category);
+      if (district) params.set('district', district);
       if (minRating > 0) params.set('minRating', String(minRating));
       if (maxPrice < 99999) params.set('maxPrice', String(maxPrice));
       if (availableOnly) params.set('available', 'true');
@@ -66,7 +68,7 @@ function ServicesPageInner() {
     } finally {
       setLoading(false);
     }
-  }, [search, category, minRating, maxPrice, availableOnly]);
+  }, [search, category, district, minRating, maxPrice, availableOnly]);
 
   useEffect(() => {
     fetchWorkers();
@@ -118,6 +120,7 @@ function ServicesPageInner() {
                 <button
                   onClick={() => {
                     setCategory('');
+                    setDistrict('');
                     setMinRating(0);
                     setMaxPrice(99999);
                     setAvailableOnly(false);
@@ -143,6 +146,38 @@ function ServicesPageInner() {
                       }`}
                     >
                       {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* District */}
+              <div className="mb-6">
+                <p className="text-sm font-semibold text-[#0F172A] mb-3 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5" /> District
+                </p>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => setDistrict('')}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+                      district === ''
+                        ? 'bg-[#0F172A] text-white font-medium'
+                        : 'text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    All Districts
+                  </button>
+                  {MAURITIUS_DISTRICTS.map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setDistrict(d)}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+                        district === d
+                          ? 'bg-[#0F172A] text-white font-medium'
+                          : 'text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
+                      }`}
+                    >
+                      {d}
                     </button>
                   ))}
                 </div>
@@ -188,20 +223,32 @@ function ServicesPageInner() {
 
           {/* Worker Grid */}
           <div className="flex-1">
-            {/* Results count */}
-            <div className="flex items-center justify-between mb-6">
+            {/* Results count + active filter chips */}
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
               <p className="text-sm text-[#64748B]">
                 {loading ? 'Searching...' : `${total} professional${total !== 1 ? 's' : ''} found`}
               </p>
-              {category && (
-                <button
-                  onClick={() => setCategory('')}
-                  className="flex items-center gap-1 text-sm text-[#64748B] hover:text-[#0F172A]"
-                >
-                  <X className="w-4 h-4" />
-                  Clear filter
-                </button>
-              )}
+              <div className="flex flex-wrap gap-2">
+                {category && (
+                  <button
+                    onClick={() => setCategory('')}
+                    className="flex items-center gap-1 text-xs font-semibold bg-[#0F172A] text-white px-3 py-1.5 rounded-full hover:bg-[#1E293B]"
+                  >
+                    {CATEGORIES.find((c) => c.slug === category)?.label ?? category}
+                    <X className="w-3 h-3 ml-0.5" />
+                  </button>
+                )}
+                {district && (
+                  <button
+                    onClick={() => setDistrict('')}
+                    className="flex items-center gap-1 text-xs font-semibold bg-[#FACC15] text-[#0F172A] px-3 py-1.5 rounded-full hover:bg-[#F59E0B]"
+                  >
+                    <MapPin className="w-3 h-3" />
+                    {district}
+                    <X className="w-3 h-3 ml-0.5" />
+                  </button>
+                )}
+              </div>
             </div>
 
             {loading ? (

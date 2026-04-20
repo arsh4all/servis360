@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
     const available = searchParams.get('available');
     const search = searchParams.get('search') || '';
     const featured = searchParams.get('featured') === 'true';
+    const district = searchParams.get('district') || '';
     const page = parseInt(searchParams.get('page') || '1');
     const pageSize = parseInt(searchParams.get('pageSize') || '12');
 
@@ -23,6 +24,7 @@ export async function GET(req: NextRequest) {
 
     if (available === 'true') where.isAvailable = true;
     if (featured) where.isFeatured = true;
+    if (district) where.location = { contains: district, mode: 'insensitive' };
 
     if (serviceSlug) {
       where.workerServices = {

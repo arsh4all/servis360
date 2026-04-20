@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Camera, Save, Loader2, CheckCircle, MapPin, Clock, Briefcase,
   ToggleLeft, ToggleRight, Phone, ImageIcon, Quote, Video,
-  Plus, Trash2, GripVertical, X,
+  Plus, Trash2, X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { MAURITIUS_DISTRICTS } from '@/lib/districts';
 
 type Profile = {
   id: string;
@@ -340,9 +341,19 @@ export default function WorkerSettingsPage() {
 
             <div>
               <label className="block text-xs font-semibold text-[#475569] mb-1">
-                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Location</span>
+                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> District</span>
               </label>
-              <input className={inp} value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="e.g. Port Louis, Mauritius" />
+              <select
+                className={inp}
+                value={form.location}
+                onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+              >
+                <option value="">Select your district...</option>
+                {MAURITIUS_DISTRICTS.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+              <p className="text-xs text-[#94A3B8] mt-1">Customers filter professionals by district when searching.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
