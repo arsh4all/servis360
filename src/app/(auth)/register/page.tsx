@@ -339,43 +339,66 @@ function RegisterPageInner() {
                 <p className="text-sm text-[#64748B]">This is what customers see when they find you</p>
               </div>
 
-              {/* Avatar + Cover */}
-              <div className="relative">
-                {/* Cover banner */}
+              {/* Profile Photo — prominent, labeled */}
+              <div className="p-4 bg-[#F8FAFC] rounded-2xl border border-[#E2E8F0]">
+                <p className="text-xs font-bold text-[#475569] uppercase tracking-wider mb-3">Profile Photo *</p>
+                <div className="flex items-center gap-4">
+                  <div
+                    className="relative group w-20 h-20 rounded-2xl border-2 border-[#E2E8F0] overflow-hidden bg-[#FACC15] cursor-pointer shrink-0 shadow"
+                    onClick={() => !avatarUploading && fileRef.current?.click()}
+                  >
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#0F172A] font-black text-2xl">{initials}</div>
+                    )}
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+                      {avatarUploading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {avatarUrl ? (
+                      <div className="flex items-center gap-1.5 text-emerald-600 mb-1">
+                        <CheckCircle className="w-4 h-4 shrink-0" />
+                        <span className="text-xs font-semibold">Photo uploaded!</span>
+                      </div>
+                    ) : (
+                      <p className="text-sm font-semibold text-[#0F172A] mb-0.5">Add your profile photo</p>
+                    )}
+                    <p className="text-xs text-[#64748B] mb-3">Workers with a real photo get <strong>3x more bookings</strong>. Use a clear, well-lit face photo.</p>
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={avatarUploading}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#FACC15] hover:bg-[#F59E0B] text-[#0F172A] text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      {avatarUploading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...</> : <><Camera className="w-3.5 h-3.5" /> {avatarUrl ? 'Change Photo' : 'Upload Photo'}</>}
+                    </button>
+                  </div>
+                </div>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+              </div>
+
+              {/* Cover Photo */}
+              <div>
+                <p className="text-xs font-bold text-[#475569] uppercase tracking-wider mb-2">Cover Photo <span className="font-normal normal-case text-[#94A3B8]">(optional)</span></p>
                 <div
-                  className="h-28 rounded-2xl overflow-hidden bg-gradient-to-r from-[#0F172A] to-[#1E293B] cursor-pointer group relative"
+                  className="h-24 rounded-2xl overflow-hidden bg-gradient-to-r from-[#0F172A] to-[#1E293B] cursor-pointer group relative"
                   onClick={() => !coverUploading && coverRef.current?.click()}
                 >
                   {coverPreview && <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />}
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
                     {coverUploading
                       ? <Loader2 className="w-5 h-5 text-white animate-spin" />
-                      : <><ImageIcon className="w-5 h-5 text-white/70 mb-1" /><span className="text-white/70 text-xs">Click to add cover photo</span></>
+                      : <><ImageIcon className="w-5 h-5 text-white/70 mb-1" /><span className="text-white/70 text-xs">{coverPreview ? 'Click to change cover' : 'Click to add a cover banner'}</span></>
                     }
                   </div>
                 </div>
                 <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleCoverChange} />
-
-                {/* Avatar overlaid */}
-                <div className="absolute -bottom-8 left-4">
-                  <div
-                    className="relative group w-20 h-20 rounded-2xl border-4 border-white overflow-hidden bg-[#FACC15] cursor-pointer shadow-lg"
-                    onClick={() => !avatarUploading && fileRef.current?.click()}
-                  >
-                    {avatarPreview ? (
-                      <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#0F172A] font-black text-xl">{initials}</div>
-                    )}
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      {avatarUploading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
-                    </div>
-                  </div>
-                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                </div>
+                <p className="text-xs text-[#94A3B8] mt-1.5">Wide banner shown at the top of your public profile (1200×400px recommended)</p>
               </div>
 
-              <div className="pt-10 space-y-4">
+              <div className="space-y-4">
                 {/* Phone */}
                 <div>
                   <label className="block text-xs font-semibold text-[#475569] mb-1.5 flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> WhatsApp / Phone Number</label>
