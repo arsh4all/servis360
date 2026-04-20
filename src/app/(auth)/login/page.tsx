@@ -87,11 +87,16 @@ function LoginPageInner() {
       setOtpSent(true);
       toast.success(`Code sent to ${fullPhone}`);
     } catch (err: any) {
+      console.error('Firebase phone auth error:', err?.code, err?.message, err);
       const msg = err?.code === 'auth/invalid-phone-number'
         ? 'Invalid phone number format'
         : err?.code === 'auth/too-many-requests'
         ? 'Too many attempts. Try again later.'
-        : 'Failed to send code. Check your number and try again.';
+        : err?.code === 'auth/captcha-check-failed'
+        ? 'reCAPTCHA failed. Please refresh and try again.'
+        : err?.code === 'auth/app-not-authorized'
+        ? 'This domain is not authorized. Contact support.'
+        : `Failed to send code (${err?.code || 'unknown'}). Check your number and try again.`;
       toast.error(msg);
       recaptchaVerifierRef.current = null;
     } finally {
