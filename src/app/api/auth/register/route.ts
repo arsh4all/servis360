@@ -6,16 +6,26 @@ import { signAccessToken, signRefreshToken } from '@/lib/jwt';
 import { apiSuccess, apiError } from '@/lib/utils';
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
-  email: z.string().email('Invalid email address'),
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .min(8)
+    .regex(/[A-Z]/)
+    .regex(/[a-z]/)
+    .regex(/[0-9]/),
   role: z.enum(['CUSTOMER', 'WORKER']),
   avatarUrl: z.string().url().optional(),
+  // Worker profile fields
+  phone: z.string().max(20).optional().or(z.literal('')),
+  coverImageUrl: z.string().url().optional().or(z.literal('')),
+  tagline: z.string().max(150).optional().or(z.literal('')),
+  bio: z.string().max(1000).optional().or(z.literal('')),
+  location: z.string().max(100).optional(),
+  experienceYears: z.number().int().min(0).max(50).optional(),
+  responseTime: z.string().optional(),
+  videoUrl: z.string().url().optional().or(z.literal('')),
+  photos: z.array(z.string().url()).optional(),
   services: z.array(z.object({
     serviceId: z.string(),
     price: z.number().positive(),
@@ -32,13 +42,14 @@ export async function POST(req: NextRequest) {
       return apiError('Validation failed', 422, parsed.error.flatten().fieldErrors);
     }
 
-    const { name, email, password, role, avatarUrl, services } = parsed.data;
+    const {
+      name, email, password, role, avatarUrl,
+      phone, coverImageUrl, tagline, bio, location,
+      experienceYears, responseTime, videoUrl, photos, services,
+    } = parsed.data;
 
-    // Check if email already exists
     const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return apiError('An account with this email already exists', 409);
-    }
+    if (existing) return apiError('An account with this email already exists', 409);
 
     const passwordHash = await bcrypt.hash(password, 12);
 
@@ -48,22 +59,27 @@ export async function POST(req: NextRequest) {
         email,
         passwordHash,
         role,
+        phone: phone || null,
         avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0F172A&color=FACC15&size=200`,
       },
     });
 
-    // Auto-create worker profile if registering as worker
     if (role === 'WORKER') {
       const profile = await prisma.workerProfile.create({
         data: {
           userId: user.id,
-          location: 'Mauritius',
+          location: location || 'Mauritius',
+          bio: bio || null,
+          tagline: tagline || null,
+          coverImageUrl: coverImageUrl || null,
+          videoUrl: videoUrl || null,
+          experienceYears: experienceYears ?? 0,
+          responseTime: responseTime || 'Usually within 1 hour',
           isApproved: false,
           isVerified: false,
         },
       });
 
-      // Create worker services if provided
       if (services && services.length > 0) {
         await prisma.workerService.createMany({
           data: services.map((s) => ({
@@ -75,16 +91,24 @@ export async function POST(req: NextRequest) {
           skipDuplicates: true,
         });
       }
+
+      if (photos && photos.length > 0) {
+        await prisma.workerPhoto.createMany({
+          data: photos.map((url, i) => ({
+            workerId: profile.id,
+            url,
+            sortOrder: i,
+          })),
+        });
+      }
     }
 
-    // Generate tokens
     const tokenPayload = { userId: user.id, email: user.email, role: user.role, name: user.name };
     const [accessToken, refreshToken] = await Promise.all([
       signAccessToken(tokenPayload),
       signRefreshToken(tokenPayload),
     ]);
 
-    // Store refresh token
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
     await prisma.refreshToken.create({
@@ -93,26 +117,18 @@ export async function POST(req: NextRequest) {
 
     const response = apiSuccess(
       {
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatarUrl: user.avatarUrl,
-          createdAt: user.createdAt,
-        },
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, createdAt: user.createdAt },
         accessToken,
         refreshToken,
       },
       201
     );
 
-    // Set HTTP-only cookies
     response.cookies.set('access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 15, // 15 min
+      maxAge: 60 * 15,
       path: '/',
     });
 
@@ -120,7 +136,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     });
 
