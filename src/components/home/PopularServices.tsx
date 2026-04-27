@@ -76,7 +76,7 @@ const SERVICE_SECTIONS = [
         rating: 4.8,
         bg: 'bg-amber-50',
         icon: '👔',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80&auto=format&fit=crop',
+        image: 'https://images.unsplash.com/photo-1594534475808-b18fc33b045e?w=400&q=80&auto=format&fit=crop',
       },
       {
         name: 'Laundry Service',
