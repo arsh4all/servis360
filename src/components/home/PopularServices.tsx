@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowRight, Search, Star } from 'lucide-react';
+import { ArrowRight, Star } from 'lucide-react';
+import { SmartSearch } from '@/components/ui/SmartSearch';
 
 // ── Main Categories (top row) ────────────────────────────────────────────────
 const MAIN_CATEGORIES = [
@@ -215,14 +215,6 @@ export function PopularServices({
   title?: string;
   subtitle?: string;
 } = {}) {
-  const router = useRouter();
-  const [query, setQuery] = useState('');
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (query.trim()) router.push(`/services?q=${encodeURIComponent(query.trim())}`);
-  }
-
   return (
     <section className="py-20 bg-[#F8FAFC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -242,25 +234,11 @@ export function PopularServices({
           </Link>
         </div>
 
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="mb-10">
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="What do you need help with? (e.g. ironing, gardening, plumbing)"
-              className="w-full pl-12 pr-28 py-4 bg-white border border-[#E2E8F0] rounded-2xl shadow-sm text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#FACC15] focus:border-transparent transition-all"
-            />
-            <button
-              type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#0F172A] text-white text-sm font-semibold px-5 py-2 rounded-xl hover:bg-[#1E293B] transition-colors"
-            >
-              Search
-            </button>
-          </div>
-        </form>
+        {/* Smart Search */}
+        <SmartSearch
+          placeholder="What do you need help with? (e.g. ironing, fixing a door, gardening)"
+          className="mb-10 w-full"
+        />
 
         {/* ── 6 Main Categories (one row) ── */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">

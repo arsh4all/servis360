@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, MapPin, ArrowRight, Star, Shield, CheckCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useTilt } from '@/hooks/useTilt';
 import { MAURITIUS_DISTRICTS } from '@/lib/districts';
+import { getSuggestions, getHighlightSegments, TOP_CATEGORIES, type SearchSuggestion } from '@/lib/search-mappings';
+import { cn } from '@/lib/utils';
 
 const POPULAR_SEARCHES = ['Cleaning', 'Electrician', 'Plumbing', 'Nanny', 'CCTV'];
 
@@ -21,6 +23,44 @@ export function HeroSection({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [district, setDistrict] = useState('');
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [noMatch, setNoMatch] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (!searchContainerRef.current?.contains(e.target as Node)) setDropdownOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  function handleSearchChange(val: string) {
+    setSearchQuery(val);
+    setActiveIdx(-1);
+    if (val.trim().length < 2) { setSuggestions([]); setNoMatch(false); setDropdownOpen(false); return; }
+    const results = getSuggestions(val);
+    setSuggestions(results);
+    setNoMatch(results.length === 0);
+    setDropdownOpen(true);
+  }
+
+  function selectSuggestion(s: SearchSuggestion) {
+    setSearchQuery(s.label);
+    setDropdownOpen(false);
+    router.push(s.href);
+  }
+
+  function handleSearchKeyDown(e: React.KeyboardEvent) {
+    const items = noMatch ? TOP_CATEGORIES : suggestions;
+    if (!dropdownOpen || items.length === 0) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx((i) => Math.min(i + 1, items.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx((i) => Math.max(i - 1, -1)); }
+    else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); selectSuggestion(items[activeIdx]); }
+    else if (e.key === 'Escape') { setDropdownOpen(false); }
+  }
 
   // Independent tilt instance for each hero card
   const mainCard  = useTilt({ maxTilt: 6,  scale: 1.02, gloss: true,  perspective: 900 });
@@ -64,37 +104,78 @@ export function HeroSection({
               {subtitle}
             </p>
 
-            {/* Search Bar */}
+            {/* Smart Search Bar */}
             <form onSubmit={handleSearch} className="mb-6">
-              <div className="flex gap-2 bg-white rounded-2xl p-2 shadow-soft max-w-xl">
-                <div className="flex-1 flex items-center gap-2 px-3">
-                  <Search className="w-5 h-5 text-[#64748B] shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="What service do you need?"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 text-[#0F172A] placeholder:text-[#94A3B8] outline-none text-sm bg-transparent"
-                  />
+              <div ref={searchContainerRef} className="relative max-w-xl">
+                <div className="flex gap-2 bg-white rounded-2xl p-2 shadow-soft">
+                  <div className="flex-1 flex items-center gap-2 px-3">
+                    <Search className="w-5 h-5 text-[#64748B] shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="What service do you need?"
+                      value={searchQuery}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      onKeyDown={handleSearchKeyDown}
+                      onFocus={() => { if (searchQuery.trim().length >= 2) setDropdownOpen(true); }}
+                      className="flex-1 text-[#0F172A] placeholder:text-[#94A3B8] outline-none text-sm bg-transparent"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1 pl-3 border-l border-[#E2E8F0] relative">
+                    <MapPin className="w-4 h-4 text-[#64748B] shrink-0" />
+                    <select
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                      className="text-sm text-[#64748B] bg-transparent outline-none cursor-pointer appearance-none pr-5"
+                    >
+                      <option value="">All Mauritius</option>
+                      {MAURITIUS_DISTRICTS.map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-[#94A3B8] absolute right-0 pointer-events-none" />
+                  </div>
+                  <Button type="submit" variant="accent" size="md" className="shrink-0">
+                    Search <ArrowRight className="w-4 h-4" />
+                  </Button>
                 </div>
-                <div className="hidden sm:flex items-center gap-1 pl-3 border-l border-[#E2E8F0] relative">
-                  <MapPin className="w-4 h-4 text-[#64748B] shrink-0" />
-                  <select
-                    value={district}
-                    onChange={(e) => setDistrict(e.target.value)}
-                    className="text-sm text-[#64748B] bg-transparent outline-none cursor-pointer appearance-none pr-5"
-                  >
-                    <option value="">All Mauritius</option>
-                    {MAURITIUS_DISTRICTS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
+
+                {/* Dropdown */}
+                {dropdownOpen && (noMatch ? TOP_CATEGORIES : suggestions).length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl border border-[#E2E8F0] shadow-xl overflow-hidden z-50 animate-fade-in">
+                    {noMatch && (
+                      <div className="px-4 pt-3 pb-2 border-b border-[#F1F5F9]">
+                        <p className="text-xs text-[#64748B]">No exact match — try browsing categories</p>
+                      </div>
+                    )}
+                    {(noMatch ? TOP_CATEGORIES : suggestions).map((s, i) => (
+                      <button
+                        key={s.href + i}
+                        type="button"
+                        onMouseDown={(e) => { e.preventDefault(); selectSuggestion(s); }}
+                        onMouseEnter={() => setActiveIdx(i)}
+                        className={cn(
+                          'w-full flex items-center gap-3 px-4 py-3 text-left transition-colors',
+                          i === activeIdx ? 'bg-[#FFFBEB]' : 'hover:bg-[#F8FAFC]',
+                          i < (noMatch ? TOP_CATEGORIES : suggestions).length - 1 && 'border-b border-[#F1F5F9]'
+                        )}
+                      >
+                        <span className="text-lg shrink-0">{s.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#0F172A] truncate">
+                            {getHighlightSegments(s.label, searchQuery).map((seg, j) => (
+                              <span key={j} className={seg.highlight ? 'text-[#FACC15] bg-[#FFFBEB] rounded px-0.5' : ''}>
+                                {seg.text}
+                              </span>
+                            ))}
+                          </p>
+                          <p className="text-xs text-[#64748B]">{s.category}</p>
+                        </div>
+                        <ArrowRight className="w-3.5 h-3.5 text-[#94A3B8] shrink-0" />
+                      </button>
                     ))}
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#94A3B8] absolute right-0 pointer-events-none" />
-                </div>
-                <Button type="submit" variant="accent" size="md" className="shrink-0">
-                  Search
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+                  </div>
+                )}
               </div>
             </form>
 
